@@ -33,7 +33,7 @@
                     <a class="nav-link disabled" aria-disabled="true"></a>
                 </li>
             </ul>
-            <form class="d-flex" role="search" id="search-form">
+            <form class="d-flex" role="search" id="search-form" id="search-form">
                 <input class="form-control me-2" type="search" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Поиск</button>
             </form>
@@ -52,13 +52,28 @@
     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="cartButton">
         Корзина
     </button>
-    <a id="cartCounter" class="btn btn-secondary"></a>
+    <a id="cartCounter" class="btn btn-secondary">0</a>
     <ul class="dropdown-menu" id="cart">
 
     </ul>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <img src="carrtimg.png" class="rounded me-2" alt="...">
+            <strong class="me-auto"></strong>
+            <small>Только что</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+        </div>
+    </div>
+</div>
+
+
 
 <script src="main.js"></script>
+
 </body>
 </html>
