@@ -21,49 +21,65 @@ const products = [
     }
 ];
 let cart = [];
-
+let filteredProducts = [...products]
 // DOM elements
 const cartDropdown = document.getElementById("cart");
 const productsElement = document.getElementById("products");
 const cartCounter = document.getElementById("cartCounter");
 const searchInput = document.querySelector("#search-form input");
 
+
 // functions
-// Фильтрация товаров
-function filterProducts() {
-    const searchTerm = searchInput.value.toLowerCase(); // перевод текста в нижний регистр
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm) // проверка содержит ли имя товара введённый текст
-    );
-    
-    renderProductList(filteredProducts); // отоброжание отфильтрованих товаров
+function updateCartCounter() {
+    const cartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    if (cartItems > 0) {
+        cartCounter.textContent = cartItems;
+    } else {
+        cartCounter.textContent = "0";
+    }
 }
+function filterSearch() {
+    const searchTerm = searchInput.value.toLowerCase().trim(); // переоброзование текста в нижний регистр, trim - удаление пробелов
+    let filteredProducts = [];
 
-
-function renderProductList(filteredList = products) {
-    productsElement.innerHTML = ""; // Очищаем контейнер
-
-    for (const product of filteredList) { // перебираем массив отфильтрованных товаров
-        productsElement.innerHTML += `
-            <div class="col-md-3">
-                <div class="card">
-                    <img src="${product.img}" class="card-img-top" alt="${product.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${product.name}</h5>
-                        <p class="price">${product.price}$</p>
-                        <button type="button" class="btn btn-success buy-button" id="product-buy-${product.id}">Купить</button>
-                    </div>
-                </div>
-            </div>
-        `;
+    if (searchTerm === "") {
+        renderProductList(products); // показываем все товары при пустом поиске
+        return;
     }
 
-    addEventClickToBuyButtons(); 
+    for (const product of products) {
+        if (product.name.toLowerCase().includes(searchTerm)) { // поиск имя товара
+            filteredProducts.push(product);
+        }
+    }
+
+    renderProductList(filteredProducts);
+}
+searchInput.addEventListener("input", filterSearch);
+
+function renderProductList(filteredList = products) { // декларируем функцию
+    productsElement.innerHTML = "";
+    for (const product of filteredList) { //перебирает элементы массива products
+        productsElement.innerHTML = `${productsElement.innerHTML}
+ <div class="col-md-3">
+        <div class="card">
+            <img src="${product.img}" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">${product.name}</h5>
+                <p class="price">${product.price}$</p>
+                <button type="button" class="btn btn-success" id="product-buy-${product.id}">Купить</button>
+            </div>
+        </div>
+    </div>
+
+    
+`;
+    }
+    addEventClickToBuyButtons()
+    updateCartCounter()
 }
 
-// Слушатель ввода текста
-searchInput.addEventListener("input", filterProducts); // слушатель на input, чтобы обновлять список при вводе текста
-searchInput.addEventListener("input", filterProducts); // слушатель на input, чтобы обновлять список при вводе текста
 
 
 
@@ -81,25 +97,31 @@ function renderCartItems() {
                 <span>${item.quantity}</span>
             </li>
         `;
-        cartCounter.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-        console.log(`Создана кнопка: ${buttonId}`);
+
+
     }
 
     addEventClickToCart(); // Вешаем обработчики
+    addEventClickToCartButtons();
+    updateCartCounter()
 }
 
 
 
 function addEventClickToCart() {
-    console.log("Вызов addEventClickToCart()"); // Проверяем, вызывается ли функция
+
 
     document.querySelectorAll(".btn-success[id^='cart-buy-']").forEach(button => {
         button.addEventListener("click", function () {
+            event.stopImmediatePropagation();
             const itemId = parseInt(button.id.replace("cart-buy-", "")); // Получаем id товара
+
+
             const index = cart.findIndex(cartItem => cartItem.id === itemId);
             if (index !== -1) {
                 cart[index].quantity += 1; // Увеличиваем количество
                 renderCartItems(); // Обновляем корзину
+                updateCartCounter()
             }
         });
     });
@@ -115,7 +137,6 @@ function addEventClickToBuyButtons() { // декларируем функцию
                     indexProductInCart = index;
                 }
             }
-            console.log("Содержимое корзины:", cart);
             if (indexProductInCart === -1) {
                 cart.push({...product, quantity: 1});
             } else {
@@ -124,7 +145,8 @@ function addEventClickToBuyButtons() { // декларируем функцию
             }
 
             renderCartItems();
-            addEventClickToCartButtons();
+            updateCartCounter()
+
 
             const toastElement = document.getElementById("liveToast");
             const toast = new bootstrap.Toast(toastElement);
@@ -137,23 +159,25 @@ function addEventClickToBuyButtons() { // декларируем функцию
     }
 }
 
-function addEventClickToCartButtons() { // декларируем функцию
-    for (const item of cart) { // перебирает элементы массива корзины
+function addEventClickToCartButtons() {
+    // Перебираем все кнопки удаления в корзине
+    document.querySelectorAll(".btn-danger[id^='card-delete-']").forEach(button => {
+        button.addEventListener("click", function () {
+            event.stopImmediatePropagation();
+            const itemId = parseInt(button.id.replace("card-delete-", "")); // Получаем id товара для удаления
 
-        const cardDeleteButtonElement = document.getElementById(`card-delete-${item.id}`);
-        cardDeleteButtonElement.addEventListener("click", function () { // навешиваем event на кнопку TODO: улучшить удаление из корзины с проверкой количества продукта
-            const index = cart.findIndex(cartItem => cartItem.id === item.id);
+            const index = cart.findIndex(cartItem => cartItem.id === itemId); // Находим индекс товара в корзине
             if (index !== -1) {
                 if (cart[index].quantity > 1) {
-                    cart[index].quantity--; // Уменьшаем количество
+                    cart[index].quantity--; // Уменьшаем количество товара на 1
                 } else {
-                    cart.splice(index, 1); // Удаляем полностью, если 1 шт.
+                    cart.splice(index, 1); // Если количество товара 1, удаляем товар из корзины
                 }
             }
-            renderCartItems();
-            addEventClickToCartButtons(); // Заново вешаем обработчики
+            renderCartItems(); // Обновляем корзину
+            updateCartCounter()
         });
-    }
+    });
 }
 
 
@@ -161,8 +185,8 @@ function addEventClickToCartButtons() { // декларируем функцию
 // functions call
 renderProductList();
 renderCartItems();
-addEventClickToBuyButtons();
 addEventClickToCartButtons();
+updateCartCounter()
 
 
 
