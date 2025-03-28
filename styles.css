@@ -7,3 +7,15 @@
         width: 50%;
         height: 50%;
 }
+.pagination {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.pagination .page-link {
+    color: green;
+}
+.pagination .page-link:hover {
+    color: lightgreen;
+}

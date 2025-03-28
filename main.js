@@ -26,6 +26,7 @@ let filteredProducts = [...products]
 const cartDropdown = document.getElementById("cart");
 const productsElement = document.getElementById("products");
 const cartCounter = document.getElementById("cartCounter");
+const cashCounter = document.getElementById("cashCounter");
 const searchInput = document.querySelector("#search-form input");
 
 
@@ -41,7 +42,7 @@ function updateCartCounter() {
 }
 function filterSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim(); // переоброзование текста в нижний регистр, trim - удаление пробелов
-    let filteredProducts = [];
+
 
     if (searchTerm === "") {
         renderProductList(products); // показываем все товары при пустом поиске
@@ -78,6 +79,7 @@ function renderProductList(filteredList = products) { // декларируем 
     }
     addEventClickToBuyButtons()
     updateCartCounter()
+
 }
 
 
@@ -85,10 +87,10 @@ function renderProductList(filteredList = products) { // декларируем 
 
 function renderCartItems() {
     cartDropdown.innerHTML = ""; // Очищаем корзину перед рендерингом
-
+    let totalPrice = 0;
     for (const item of cart) { // Перебираем корзину
         const buttonId = `cart-buy-${item.id}`; // Определяем внутри цикла!
-
+        totalPrice += item.price * item.quantity;
         cartDropdown.innerHTML += ` 
             <li>
                 <a type="text" class="btn btn-success">${item.name}</a>
@@ -98,6 +100,12 @@ function renderCartItems() {
             </li>
         `;
 
+        if (totalPrice > 0) {
+            cashCounter.textContent = `${totalPrice}$`;
+        }
+        else  {
+            cashCounter.textContent = "0";
+        }
 
     }
 
